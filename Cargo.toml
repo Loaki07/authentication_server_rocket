@@ -2,7 +2,19 @@
 name = "authentication_server_rocket"
 version = "0.1.0"
 edition = "2018"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rocket = { version = "0.5.0-rc.1", features = ["secrets", "tls", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+base64 = "0.13"
+serde_json = "1.0.64"
+dotenv = "0.15.0"
+log = "0.4"
+
+[dependencies.mongodb]
+version = "1.2.2"
+default-features = false
+features = ["async-std-runtime"]
