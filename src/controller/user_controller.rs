@@ -20,7 +20,9 @@ pub async fn sign_in(
 pub async fn sign_up(
     user: Form<Strict<RegisterUser>>,
 ) -> Result<status::Custom<Value>, status::Custom<Value>> {
-    println!("Sign-in: {:#?}", user);
+    let hasher = CryptoService::new();
+    let password_hash = hasher.hash_password(user.password.clone()).await.unwrap();
+    println!("password_hash : {:#?}", password_hash);
     let message = json!({"success": true, "data": "User Registration Successful"});
     Ok(status::Custom(Status::Ok, message))
 }
