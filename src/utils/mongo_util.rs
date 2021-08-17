@@ -41,7 +41,7 @@ impl MongoUtil {
         Ok(collection)
     }
 
-    pub async fn insert_one(data: RegisterUser) -> Result<Option<Value>, Error> {
+    pub async fn insert_one(data: RegisterUser) -> Result<Option<User>, Error> {
         let db = MongoUtil::mongo_collection(DATABASE_NAME).await?;
         let insertable = bson::to_document(&data).unwrap();
         let bson_res = db.insert_one(insertable, None).await.unwrap();
@@ -53,15 +53,16 @@ impl MongoUtil {
         Ok(created_obj)
     }
 
-    pub async fn find_one(filter: Value) -> EyreResult<Option<Value>> {
+    pub async fn find_one(filter: Value) -> EyreResult<Option<User>> {
         let db = MongoUtil::mongo_collection(DATABASE_NAME).await?;
         let insertable = bson::to_document(&filter).unwrap();
         let doc_res = db.find_one(insertable, None).await?;
         match doc_res {
             Some(document) => {
-                let doc: Document =
+                let res: User =
                     bson::from_bson(bson::Bson::Document(document)).expect("could not decode");
-                let res = json!(doc);
+                println!("user: {:?}", res.clone());
+                // let res: User = json!(doc);
                 println!("Find: {:#?}", res.clone());
                 Ok(Some(res))
             }
@@ -79,7 +80,7 @@ impl MongoUtil {
         Ok(results)
     }
 
-    pub async fn update_one(id: ObjectId, new_data: RegisterUser) -> Result<Option<Value>, Error> {
+    pub async fn update_one(id: ObjectId, new_data: RegisterUser) -> Result<Option<User>, Error> {
         println!("new_data: {:#?}", &new_data);
         let db = MongoUtil::mongo_collection(DATABASE_NAME).await?;
         let filter_json = json!({ "_id": id.clone() });

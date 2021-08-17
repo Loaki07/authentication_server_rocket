@@ -1,10 +1,11 @@
-use serde_json::Value;
+use crate::models::user::User;
 
 #[derive(Debug)]
 pub enum AuthenticationError {
     MongoError(mongodb::error::Error),
-    UserAlreadyExists(Value),
-    DbError(String)
+    UserAlreadyExists(User),
+    DbError(String),
+    PasswordMismatch(String),
 }
 
 impl From<mongodb::error::Error> for AuthenticationError {

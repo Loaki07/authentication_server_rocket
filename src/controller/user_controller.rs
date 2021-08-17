@@ -14,9 +14,14 @@ use serde_json::{json, Value};
 pub async fn sign_in(
     user: Form<Strict<LoginUser>>,
 ) -> Result<status::Custom<Value>, status::Custom<Value>> {
-    println!("Sign-in: {:#?}", user);
-    let message = json!({"success": true, "message": "Login Successful"});
-    Ok(status::Custom(Status::Ok, message))
+    let result = UserService::login(user.into_inner().into_inner()).await.map_err(|e| {
+        let message = json!({"success": false, "message": format!("Login Failed with error: {:#?}", e)});
+        return status::Custom(Status::NotImplemented, message);
+    }).and_then(|res| {
+        let message = json!({"success": true, "message": "Login Successful", "data": res});
+        return Ok(status::Custom(Status::Ok, message));
+    });
+    result
 }
 
 #[post("/auth/sign-up", data = "<user>")]

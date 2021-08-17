@@ -9,18 +9,18 @@ pub enum UserType {
     Worker,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct User {
     pub first_name: String,
     pub last_name: String,
     pub email_id: String,
-    #[serde(skip_serializing)]
-    pub password: String,
+    // #[serde(skip_serializing)]
+    pub password: Option<String>,
     pub user_type: UserType,
     pub bio: Option<String>,
     pub image: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
 }
 
 #[derive(FromForm, Serialize, Debug, Deserialize, Validate, Clone)]
@@ -32,13 +32,13 @@ pub struct RegisterUser {
     pub user_type: UserType,
     #[validate(email)]
     pub email_id: String,
-    #[serde(skip_serializing)]
+    // #[serde(skip_serializing)]
     pub password: String,
 }
 
 #[derive(FromForm, Serialize, Debug, Deserialize, Clone)]
 pub struct LoginUser {
     pub username: String,
-    #[serde(skip_serializing)]
+    // #[serde(skip_serializing)]
     pub password: String,
 }
