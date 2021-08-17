@@ -2,7 +2,7 @@ use crate::config::crypto::CryptoService;
 use crate::handlers::error::AuthenticationError;
 use crate::models::user::{LoginUser, RegisterUser, User};
 use crate::utils::mongo_util::MongoUtil;
-use serde_json::{json, Value};
+use serde_json::json;
 
 pub struct UserService;
 
@@ -26,13 +26,22 @@ impl UserService {
             .map_err(|err| AuthenticationError::DbError(err.to_string()))
             .and_then(|data| Ok(data.unwrap()));
 
+        // Verify passwords
         let verifier = CryptoService::new();
         match verifier
             .verify_password(user.password, found_user.unwrap().password.unwrap())
             .await
         {
-            Ok(is_verified) => Ok(is_verified),
-            Err(e) => Err(AuthenticationError::PasswordMismatch(e.to_string())),
+            Ok(is_verified) => {
+                return if is_verified {
+                    Ok(is_verified)
+                } else {
+                    Err(AuthenticationError::PasswordMismatch(
+                        "Password Does Not Match".to_owned(),
+                    ))
+                }
+            }
+            Err(e) => Err(AuthenticationError::LoginError(e.to_string())),
         }
     }
 }

@@ -6,6 +6,7 @@ pub enum AuthenticationError {
     UserAlreadyExists(User),
     DbError(String),
     PasswordMismatch(String),
+    LoginError(String)
 }
 
 impl From<mongodb::error::Error> for AuthenticationError {

@@ -7,7 +7,6 @@ use mongodb::{
     bson::oid::ObjectId,
     bson::{doc, Document},
     error::Error,
-    error::ErrorKind::OperationError,
     options::ClientOptions,
     results::DeleteResult,
     Client, Collection,
