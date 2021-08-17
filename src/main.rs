@@ -5,6 +5,7 @@ extern crate validator_derive;
 
 mod config;
 mod controller;
+mod handlers;
 mod models;
 mod services;
 mod utils;
@@ -19,13 +20,13 @@ use serde_json::{json, Value};
 
 #[get("/")]
 fn api_home() -> status::Custom<Value> {
-    let message = json!({"success": true, "data": "Authentication Server"});
+    let message = json!({"success": true, "message": "Authentication Server"});
     status::Custom(Status::Ok, message)
 }
 
 #[catch(404)]
 fn not_found() -> status::Custom<Value> {
-    let message = json!({ "success": false, "data": "Not found!" });
+    let message = json!({ "success": false, "message": "Not found!" });
     status::Custom(Status::NotFound, message)
 }
 
@@ -56,7 +57,12 @@ async fn rocket() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![api_home, controller::sign_in, controller::sign_up],
+            routes![
+                api_home,
+                controller::sign_in,
+                controller::sign_up,
+                controller::find_user,
+            ],
         )
         .attach(CORS)
         .register("/", catchers![not_found])

@@ -1,5 +1,8 @@
 use crate::config::crypto::CryptoService;
 use crate::models::user::*;
+use crate::services::user_service::UserService;
+use crate::utils::mongo_util::MongoUtil;
+use rocket::serde::json::Json;
 use rocket::{
     form::{Form, Strict},
     http::Status,
@@ -12,17 +15,38 @@ pub async fn sign_in(
     user: Form<Strict<LoginUser>>,
 ) -> Result<status::Custom<Value>, status::Custom<Value>> {
     println!("Sign-in: {:#?}", user);
-    let message = json!({"success": true, "data": "Login Successful"});
+    let message = json!({"success": true, "message": "Login Successful"});
     Ok(status::Custom(Status::Ok, message))
 }
 
 #[post("/auth/sign-up", data = "<user>")]
 pub async fn sign_up(
-    user: Form<Strict<RegisterUser>>,
+    mut user: Form<Strict<RegisterUser>>,
 ) -> Result<status::Custom<Value>, status::Custom<Value>> {
     let hasher = CryptoService::new();
     let password_hash = hasher.hash_password(user.password.clone()).await.unwrap();
-    println!("password_hash : {:#?}", password_hash);
-    let message = json!({"success": true, "data": "User Registration Successful"});
-    Ok(status::Custom(Status::Ok, message))
+    user.password = password_hash;
+    println!("password_hash : {:#?}", user.clone());
+
+    let result = UserService::register(user.into_inner().into_inner()).await.map_err(|e| {
+        let message = json!({"success": false, "message": format!("User Registration Failed with error: {:#?}", e)});
+        return status::Custom(Status::NotImplemented, message);
+
+    }).and_then(|res| {
+        let message = json!({"success": true, "message": "User Registration Successful", "data": res});
+        return Ok(status::Custom(Status::Ok, message));
+    });
+    result
+}
+
+#[post("/auth/find-user", data = "<user>")]
+pub async fn find_user(user: Json<Value>) -> Result<status::Custom<Value>, status::Custom<Value>> {
+    MongoUtil::find_one(json!(user.into_inner())).await.map_err(|err| {
+        let message = json!({"success": false, "message": format!("Find User Failed with error: {:#?}", err)});
+        return status::Custom(Status::InternalServerError, message);
+
+    }).and_then(|data| {
+        let message = json!({"success": true, "message": "Found User", "data": data});
+        return Ok(status::Custom(Status::Ok, message))
+    })
 }

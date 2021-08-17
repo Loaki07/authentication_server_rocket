@@ -1,10 +1,13 @@
 use crate::models::user::*;
+use color_eyre::Result as EyreResult;
+use eyre::eyre;
 use futures::stream::TryStreamExt;
 use mongodb::{
     bson,
     bson::oid::ObjectId,
     bson::{doc, Document},
     error::Error,
+    error::ErrorKind::OperationError,
     options::ClientOptions,
     results::DeleteResult,
     Client, Collection,
@@ -44,22 +47,28 @@ impl MongoUtil {
         let bson_res = db.insert_one(insertable, None).await.unwrap();
         let res: ObjectId = bson::from_bson(bson_res.inserted_id).unwrap();
 
-        let created_obj = Self::find_one(json!({ "_id": res })).await?;
+        let created_obj = Self::find_one(json!({ "_id": res }))
+            .await
+            .expect("Could not find document in db");
         Ok(created_obj)
     }
 
-    pub async fn find_one(filter: Value) -> Result<Option<Value>, Error> {
+    pub async fn find_one(filter: Value) -> EyreResult<Option<Value>> {
         let db = MongoUtil::mongo_collection(DATABASE_NAME).await?;
         let insertable = bson::to_document(&filter).unwrap();
         let doc_res = db.find_one(insertable, None).await?;
         match doc_res {
             Some(document) => {
-                let doc = bson::from_bson(bson::Bson::Document(document))?;
+                let doc: Document =
+                    bson::from_bson(bson::Bson::Document(document)).expect("could not decode");
                 let res = json!(doc);
                 println!("Find: {:#?}", res.clone());
                 Ok(Some(res))
             }
-            None => Ok(None),
+            None => {
+                let message = "Could not find document";
+                return Err(eyre!(message));
+            }
         }
     }
 
@@ -70,10 +79,7 @@ impl MongoUtil {
         Ok(results)
     }
 
-    pub async fn update_one(
-        id: ObjectId,
-        new_data: RegisterUser,
-    ) -> Result<Option<Value>, Error> {
+    pub async fn update_one(id: ObjectId, new_data: RegisterUser) -> Result<Option<Value>, Error> {
         println!("new_data: {:#?}", &new_data);
         let db = MongoUtil::mongo_collection(DATABASE_NAME).await?;
         let filter_json = json!({ "_id": id.clone() });
@@ -88,7 +94,10 @@ impl MongoUtil {
 
         println!("Updated {} document", doc_res.modified_count);
 
-        let updated_obj = Self::find_one(json!({ "_id": id })).await?;
+        let updated_obj = Self::find_one(json!({ "_id": id }))
+            .await
+            .expect("Could not find document in db");
+
         Ok(updated_obj)
     }
 

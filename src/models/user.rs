@@ -3,7 +3,7 @@ use rocket::form::FromForm;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Debug, Serialize, Deserialize, FromFormField)]
+#[derive(Debug, Serialize, Deserialize, FromFormField, Clone)]
 pub enum UserType {
     Customer,
     Worker,
@@ -23,7 +23,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(FromForm, Serialize, Debug, Deserialize, Validate)]
+#[derive(FromForm, Serialize, Debug, Deserialize, Validate, Clone)]
 pub struct RegisterUser {
     #[validate(length(min = 3))]
     pub first_name: String,
@@ -36,7 +36,7 @@ pub struct RegisterUser {
     pub password: String,
 }
 
-#[derive(FromForm, Serialize, Debug, Deserialize)]
+#[derive(FromForm, Serialize, Debug, Deserialize, Clone)]
 pub struct LoginUser {
     pub username: String,
     #[serde(skip_serializing)]
