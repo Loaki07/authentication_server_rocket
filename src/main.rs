@@ -2,6 +2,7 @@
 extern crate rocket;
 #[macro_use]
 extern crate validator_derive;
+extern crate argon2;
 
 mod config;
 mod controller;
