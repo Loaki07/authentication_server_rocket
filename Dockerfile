@@ -1,7 +1,8 @@
-FROM rust:1.31
+FROM rust:1.54
 
 WORKDIR /authentication_server_rocker
 COPY . /authentication_server_rocker/
 
-RUN cargo run 
+RUN cargo build 
 EXPOSE 7001
+CMD cargo run
