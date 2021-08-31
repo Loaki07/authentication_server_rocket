@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+    mongo:
+        image: mongo
+        restart: always
+        environment: 
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+    authentication_service:
+        image: authentication_service
+        restart: always
+        ports:
+            - "3001:7001"
+        build:
+          context: .
+          dockerfile: Dockerfile
