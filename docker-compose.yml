@@ -11,7 +11,7 @@ services:
         image: authentication_service
         restart: always
         ports:
-            - "3001:7001"
+            - "7001:3001"
         build:
           context: .
           dockerfile: Dockerfile
