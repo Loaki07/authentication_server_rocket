@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  mongo:
+    image: marketplace_mongo
+    build: 
+      context: ./mongoDb
+      dockerfile: Dockerfile
+    volumes:
+      - "./mongoDb/mongoVolume/db:/data/db"
+    restart: always
+    ports:
+      - "27019:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: marketplace_admin
+      MONGO_INITDB_ROOT_PASSWORD: marketplace_pwd
